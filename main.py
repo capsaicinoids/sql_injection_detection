@@ -59,6 +59,14 @@ for index, packet in enumerate(capture):
 
     #|%%--%%| <KLoPb9b0Xa|GBfB53oBTP>
 
+# Unsolved Tasks
+
+"""
+    - Catch The Error
+    - Print All Available Network Interface
+    - 
+"""
+
 
 #|%%--%%| <GBfB53oBTP|uppP3N3cWN>
 
