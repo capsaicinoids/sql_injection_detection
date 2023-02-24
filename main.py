@@ -1,61 +1,55 @@
+import os
 import re
 import pickle
-import warnings
-import asyncio
+import netifaces
 import pyshark as pys
 from urllib import parse as ps
-from tensorflow.keras.models import load_model
 
-# |%%--%%| <dW3ZLyaAkT|wCEgwpOxvG>
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+import tensorflow as tf
 
-# import signal
-# import sys
-# import threading
-# warnings.filterwarnings('ignore', category=DeprecationWarning)
-# warnings.filterwarnings('ignore', category=FileNotFoundError)
-# warnings.filterwarnings('ignore', category=FutureWarning)
+#|%%--%%| <wCEgwpOxvG|Hu4CQGoOl7>
 
-warnings.filterwarnings('ignore')
+print('WELCOME!')
 
-# |%%--%%| <wCEgwpOxvG|muyaSyrdFB>
+# |%%--%%| <Hu4CQGoOl7|muyaSyrdFB>
 
-load_dnn = load_model('sqli_model.h5')
-load_vectorizer = pickle.load(open('new_vectorizer.pickle', 'rb'))
+def select_interface() -> str:
+    interfaces = netifaces.interfaces()
+    for index, interface in enumerate(interfaces):
+        print('[{}] {}'.format(index, interface))
+    else:
+        net_adapt = int(input('Select The Interface: '))
+        net_adapt = interfaces[net_adapt]
+        print('Listening on {}'.format(net_adapt))
+    return net_adapt
 
 # |%%--%%| <muyaSyrdFB|r1VXXv5IaO>
 
-def predict_uri(payload):
-    vc = load_vectorizer.transform(payload)
-    return True if load_dnn.predict(vc, verbose=0) > 0.5 else False
+model = tf.keras.models.load_model('sqli_model.h5')
+vectorizer = pickle.load(open('new_vectorizer.pickle', 'rb'))
+
+def predict_uri(payload) -> bool:
+    vc = vectorizer.transform(payload)
+    return True if model.predict(vc, verbose=0) > 0.5 else False
 
 
-def message(no_packet: str, src_ip: str, src_port: str, dst_ip: str, dst_port: str, payload: str, alert: str = '') -> str:
-    print("{}\t {}:{} ==> {}:{} === === {} -> {}".format(no_packet,
-          src_ip, src_port, dst_ip, dst_port, payload, alert))
+def message(no_packet: str, src_ip: str, src_port: str, dst_ip: str, dst_port: str, payload: str, alert: str = ''): 
+    # Print The Alert Message
+    print("{}\t {}:{} ==> {}:{} === === {} -> {}".format(no_packet, src_ip, src_port, dst_ip, dst_port, payload, alert))
 
-
-def signal_handler(signal, frame):
-    print('bye bye')
-    sys.exit(0)
-
-# signal.signal(signal.SIGINT, signal_handler)
-# print('To exit just interrupt the keyboard!')
-# forever_wait = threading.Event()
-# forever_wait.wait()
 
 # |%%--%%| <r1VXXv5IaO|KLoPb9b0Xa>
 
-
-capture = pys.LiveCapture(
-    interface='lo', display_filter='http.request.method == GET')
+capture = pys.LiveCapture(interface=select_interface(), display_filter='http.request.method == GET')
 request_uri = []
 
 for index, packet in enumerate(capture):
-    payload = re.sub(r'^.*?=', '', packet.http.request_uri.replace('+', ' '))
-    payload = ps.unquote(payload)
+    payload = re.sub(r'^.*?=', '', packet.http.request_uri.replace('+', ' ')) # Remove Unnecessary char in URL
+    payload = ps.unquote(payload)  # Decode The URL
 
-    print(load_dnn.predict(load_vectorizer.transform([payload]), verbose=0))
-    if (predict_uri([payload])) == True:
+    # print(model.predict(vectorizer.transform([payload]), verbose=0))
+    if (predict_uri([payload])):
         message(packet.frame_info.number, packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst,
                 packet[packet.transport_layer].dstport, payload, alert="ALERT THIS MIGHT BE AN SQL INJECTION ATTACK ATTEMPT!")
     else:
@@ -67,9 +61,9 @@ for index, packet in enumerate(capture):
 # Unsolved Tasks
 
 """
+    - Handle The Blocking Code
     - Catch The Error
-    - Print All Available Network Interface
-    - 
+    - Welcome Message When Start
 """
 
 
