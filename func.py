@@ -1,18 +1,12 @@
 import os
 import re
 import sys
+import csv
 import pickle
+import subprocess
 import warnings
-import pyfiglet
 import netifaces
 from urllib import parse as ps
-
-
-# Define the text to be displayed
-text = "SQL INJECTION SCANNER"
-
-# Define the font style
-font = pyfiglet.figlet_format(text, font='slant')
 
 # Define the color of the text
 color_code = {
@@ -26,10 +20,7 @@ color_code = {
 
 bold_code = "\033[1m"
 
-text_with_color = (f"{bold_code}{color_code['green']}{font}\033[0m")
-
-# Print the text to the console
-print(text_with_color)
+greeting = subprocess.run(['pyfiglet', '-c', 'GREEN', '-f', 'slant', 'SQL Injection Scanner'])
 
 
 # List And Select The Network Interfaces
@@ -85,7 +76,16 @@ def packet_processing(packet):
     payload = re.sub(r'^.*?=', '', packet.http.request_uri.replace('+', ' ')) # Remove Unnecessary char in URL
     payload = ps.unquote(payload)  # Decode The URL
 
+    # There must be a better way to do this!
     if (predict_uri([payload])):
-        message(packet.frame_info.number, packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst,
-                packet[packet.transport_layer].dstport, payload, alert="{}{}ALERT THIS MIGHT BE AN SQL INJECTION ATTACK ATTEMPT!\033[0m".format(bold_code, color_code['red'])) 
-    message(packet.frame_info.number, packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, payload)
+        message(packet.frame_info.number, packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, payload, alert="{}{}ALERT THIS MIGHT BE AN SQL INJECTION ATTACK ATTEMPT!\033[0m".format(bold_code, color_code['red'])) 
+    else: message(packet.frame_info.number, packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, payload)
+
+
+def log_packets():
+    try:
+        os.mkdir('logs')
+    except FileExistsError:
+        pass
+
+    
