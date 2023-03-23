@@ -3,6 +3,7 @@ import re
 import sys
 import csv
 import pickle
+import datetime
 import subprocess
 import warnings
 import netifaces
@@ -73,19 +74,24 @@ def message(no_packet: str, src_ip: str, src_port: str, dst_ip: str, dst_port: s
 
 # Preprocess the Packet And Display Alert Message
 def packet_processing(packet):
+    # Create Some Logs
+    folder_name = 'logs'
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+
+    current_time = datetime.datetime.now()
+    date_time_str = current_time.strftime("%Y-%m-%d_%H-%M-%S")
+    filename = os.path.join(folder_name, "{}.csv".format(date_time_str))
+
+    header_logs = ['no.', 'ip_src', 'port_src', 'ip_dest', 'port_dest', 'pkt_size', 'get_request']
+    sus_packet = []
+    
     payload = re.sub(r'^.*?=', '', packet.http.request_uri.replace('+', ' ')) # Remove Unnecessary char in URL
     payload = ps.unquote(payload)  # Decode The URL
 
     # There must be a better way to do this!
     if (predict_uri([payload])):
         message(packet.frame_info.number, packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, payload, alert="{}{}ALERT THIS MIGHT BE AN SQL INJECTION ATTACK ATTEMPT!\033[0m".format(bold_code, color_code['red'])) 
-    else: message(packet.frame_info.number, packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, payload)
+    else:
+        message(packet.frame_info.number, packet.ip.src, packet[packet.transport_layer].srcport, packet.ip.dst, packet[packet.transport_layer].dstport, payload)
 
-
-def log_packets():
-    try:
-        os.mkdir('logs')
-    except FileExistsError:
-        pass
-
-    

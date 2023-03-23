@@ -24,7 +24,7 @@ except KeyboardInterrupt:
 # Unsolved Tasks
 
 """
-    - Might change the model algorithm
+    - Might change the learning algorithm
     - Might change it to OOP
     - Add Log Features (Store Suspicious Packet Information)
     - Find a better way to display the message!
