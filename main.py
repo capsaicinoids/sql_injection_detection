@@ -112,7 +112,7 @@ def main():
         if log_data:
             with open(filename, 'w', newline='') as csvfile:
                 log_writer = csv.writer(csvfile)
-                log_writer.writerow(['No.', 'Src IP', 'Src Port', 'Dst IP', 'Dst Port', 'Payload Length', 'Payload'])
+                log_writer.writerow(['no.', 'src_ip', 'src_port', 'dst_ip', 'dst_port', 'payload_length', 'payload'])
                 log_writer.writerows(log_data)
             print(f'There have been {len(log_data)} suspicious packets recorded')
             print(f'Log {date_time_str} have been saved in the "{os.path.abspath("logs")}" folder')
