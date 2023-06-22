@@ -4,13 +4,12 @@ This is a Python-based SQL injection scanner that uses machine learning to detec
 
 ## Getting Started
 
-To get started, you need to install the required dependencies listed in the `requirements.txt` file. You can do this by running the following command:
+To get started, we need to install the required dependencies listed in the `requirements.txt` file. We also need to install Wireshark on our machine, for it is required to run the Pyshark package
+We will also need to use machine learning model and vectorizer files located in the inference directory.
 
-To run the scanner, simply run the following command:
+To install the required dependencies needed to run this script, simply run this command
 
 `pip install -r requirements.txt` 
-
-We will also need to use machine learning model and vectorizer files in the same directory as the script.
 
 To sniff, simply run the following command:
 
@@ -27,6 +26,7 @@ The following Python packages are required to run the SQL injection scanner:
 - PyShark
 - netifaces
 - TensorFlow
+- pyfiglet
 
 ## License
 
